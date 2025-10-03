@@ -1,0 +1,41 @@
+server:
+  port: 8081
+  servlet:
+    context-path: /
+
+# 数据库druid连接池配置
+spring:
+  datasource:
+    type: com.alibaba.druid.pool.DruidDataSource
+    druid:
+      driver-class-name: com.mysql.cj.jdbc.Driver
+      url: jdbc:mysql://127.0.0.1:3306/redis_practice
+      username: root
+      password: root
+  data:
+    redis:
+      host: 192.168.59.138
+      port: 6379
+      password: "redis"
+      database: 3  #默认数据库是0
+      # redis连接池配置
+      lettuce:
+        pool:
+          max-active: 8
+          max-idle: 8
+          min-idle: 1
+          time-between-eviction-runs: 10s
+  # Json处理忽略非空字段
+  jackson:
+    default-property-inclusion: non_null
+
+# mybatis-plus配置
+mybatis-plus:
+  type-aliases-package: com.tang.redis.practice.pojo.entity  # 别名扫描包
+  global-config:
+    db-config:
+      table-prefix: tb_  #设置表的前缀
+
+logging:
+  level:
+    com.hmdp: debug
