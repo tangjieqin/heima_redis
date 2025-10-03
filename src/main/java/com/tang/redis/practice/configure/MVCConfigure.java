@@ -26,7 +26,7 @@ public class MVCConfigure implements WebMvcConfigurer {
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
         // registry注册器，然后添加需要拦截的路径,或者排除哪些拦截的路径
-        registry.addInterceptor(new LoginInterceptor(stringRedisTemplate)).excludePathPatterns(
+        registry.addInterceptor(new LoginInterceptor()).excludePathPatterns(
                 "/user/code",
                 "/user/login",
                 "/blog/hot",

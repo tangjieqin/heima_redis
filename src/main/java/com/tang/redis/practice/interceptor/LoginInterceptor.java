@@ -1,26 +1,13 @@
 package com.tang.redis.practice.interceptor;
 
-
-import cn.hutool.core.bean.BeanUtil;
 import com.tang.redis.practice.dto.UserDto;
-import com.tang.redis.practice.pojo.entity.User;
-import com.tang.redis.practice.util.RedisConstants;
 import com.tang.redis.practice.util.UserHolder;
-import io.micrometer.common.util.StringUtils;
-import io.netty.util.internal.StringUtil;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import jakarta.servlet.http.HttpSession;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.redis.core.StringRedisTemplate;
-import org.springframework.data.redis.core.TimeoutUtils;
-import org.springframework.lang.Nullable;
-import org.springframework.web.servlet.HandlerInterceptor;
-import org.springframework.web.servlet.View;
 
-import java.rmi.Remote;
-import java.util.Map;
-import java.util.concurrent.TimeUnit;
+import org.springframework.web.servlet.HandlerInterceptor;
+
 
 /**
  * @program: redis_heima
@@ -42,67 +29,17 @@ import java.util.concurrent.TimeUnit;
 @Slf4j
 public class LoginInterceptor implements HandlerInterceptor {
 
-    // 这个类不是IOC容器管理，自己创建的，所以不能依赖注入，但是可以在使用类，要想注入，可以用构造函数在使用这个类中注入
-    private StringRedisTemplate stringRedisTemplate;
-    public LoginInterceptor(StringRedisTemplate stringRedisTemplate) {
-        this.stringRedisTemplate = stringRedisTemplate;
-    }
-
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
-        // 请求前的拦截，对用户验证
-        /*
-        * 1. 获取请求头的token：从请求头中获取，前端代码会塞进authorization字段中
-        * 2. 根据token获取redish中的用户的信息
-        * 3. 将查询到的hashmap转成UserDto
-        * 4. 用户的信息保存到ThreadLocal
-        * 5. 刷新token的有效期
-        * 6. 放行
-        * */
-        String token = request.getHeader("authorization");
-        if (StringUtils.isBlank(token)) {
-            // 不存在token,不拦截，返回401
-            response.setStatus(401);
-            return false;
-        }
 
-        String tokenKey = RedisConstants.LOGIN_USER_KEY + token;
-        Map<Object, Object> userMap = stringRedisTemplate.opsForHash().entries(tokenKey);
-        if (userMap.isEmpty()) {
-            // 用户不存在，不拦截，返回401
-            response.setStatus(401);
-            return false;
-        }
-
-        // 转成对象
-        UserDto userDto = BeanUtil.fillBeanWithMap(userMap, new UserDto(), false);
-        UserHolder.saveUser(userDto);
-
-        stringRedisTemplate.expire(tokenKey, RedisConstants.LOGIN_USER_TTL, TimeUnit.MINUTES);
-        return true;
-
-       /* HttpSession session = request.getSession();
-        // 这里的user是指登录成功之后，从数据库张获取的全部额用户信息，保存在session中
-        // UserDTO：是前端传过来的数据，登录时保存的部分重要的用户的信息。
-        // 但是为了避免存敏感的信息，我们在登录成功的时候，就将数据转成dto,存部分重要的数据。
-        Object user = session.getAttribute("user");
+        // 这个第二层的拦截只需要查看这个ThreadLocal 中是否有用户
+        UserDto user = UserHolder.getUser();
         if (user == null) {
             // 用户不存在拦截，返回401
             response.setStatus(401);
             return false;
         }
-
-        // 存在就保存用户的信息
-        UserHolder.saveUser((UserDto) user);
-        // 放行
-        return true;*/
-    }
-
-    @Override
-    public void afterCompletion(HttpServletRequest request, HttpServletResponse response,
-                                Object handler, @Nullable Exception ex) throws Exception {
-        // 移除用户,避免内存泄漏
-        UserHolder.removeUser();
+        return true;
     }
 }
 

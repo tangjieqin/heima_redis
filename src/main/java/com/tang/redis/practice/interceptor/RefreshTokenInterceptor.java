@@ -32,6 +32,16 @@ public class RefreshTokenInterceptor implements HandlerInterceptor {
 
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) {
+        // 请求前的拦截，对用户验证
+        /*
+         * 1. 获取请求头的token：从请求头中获取，前端代码会塞进authorization字段中
+         * 2. 根据token获取redish中的用户的信息
+         * 3. 将查询到的hashmap转成UserDto
+         * 4. 用户的信息保存到ThreadLocal
+         * 5. 刷新token的有效期
+         * 6. 放行
+         * */
+
         log.info("RefreshTokenInterceptor start!");
         // 1.请求头中获取token
         String token = request.getHeader("authorization");
