@@ -1,12 +1,10 @@
 package com.tang.redis.practice.controller;
 
 import com.tang.redis.practice.dto.Result;
+import com.tang.redis.practice.entity.Shop;
 import com.tang.redis.practice.service.ShopService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 /**
  * @program: redis_heima
@@ -29,6 +27,15 @@ public class ShopController {
     @GetMapping("/{id}")
     public Result queryShopById(@PathVariable("id") Long id) {
         return shopService.queryById(id);
+    }
+
+    /**
+     * 更新商铺的信息
+     */
+    @PutMapping
+    public Result updateShop(@RequestBody Shop shop) {
+        // 写入数据
+        return shopService.updateShopById(shop);
     }
 
 

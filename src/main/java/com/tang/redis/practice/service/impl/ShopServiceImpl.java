@@ -13,6 +13,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 
+import java.util.concurrent.TimeUnit;
+
 /**
  * @program: redis_heima
  * @description: 商户的业务层
@@ -33,7 +35,13 @@ public class ShopServiceImpl extends ServiceImpl<ShopMapper, Shop> implements Sh
         * 3. 不存在，根据id查询数据库(mybatisPlus)：转成Json放入缓存
         * */
 
-        String shopJson = stringRedisTemplate.opsForValue().get(RedisConstants.CACHE_SHOP_KEY + id);
+        /*
+        * 补充：缓存更新一致性问题：数据库更新了，缓存也要更新
+        * 添加超时剔除（防止数据长时间保留） + 主动更新（数据库更新，缓存也更新）
+        * */
+
+        String key = RedisConstants.CACHE_SHOP_KEY + id;
+        String shopJson = stringRedisTemplate.opsForValue().get(key);
 
         if (StrUtil.isNotBlank(shopJson)) {
             Shop shop = JSONUtil.toBean(shopJson, Shop.class);  // 存在，转成对象，返回
@@ -46,7 +54,22 @@ public class ShopServiceImpl extends ServiceImpl<ShopMapper, Shop> implements Sh
         }
         // 存Redis
         String jsonStr = JSONUtil.toJsonStr(shop);
-        stringRedisTemplate.opsForValue().set(RedisConstants.CACHE_SHOP_KEY + id, jsonStr);
+        stringRedisTemplate.opsForValue().set(key, jsonStr, RedisConstants.CACHE_SHOP_TTL, TimeUnit.MINUTES);  // 时间是30分钟有效
         return Result.ok(shop);
+    }
+
+    @Override
+    public Result updateShopById(Shop shop) {
+        /*
+        1. 更新数据库
+        2. 删除缓存
+         */
+        Long id = shop.getId();
+        if (id == null) {
+            return Result.fail("店铺id为空");
+        }
+        updateById(shop);
+        stringRedisTemplate.delete(RedisConstants.CACHE_SHOP_KEY + id);
+        return Result.ok();
     }
 }

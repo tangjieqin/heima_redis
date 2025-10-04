@@ -8,4 +8,6 @@ import com.tang.redis.practice.entity.Shop;
 public interface ShopService extends IService<Shop> {
 
     Result queryById(Long id);
+
+    Result updateShopById(Shop shop);
 }
