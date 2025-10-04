@@ -1,7 +1,7 @@
 package com.tang.redis.practice.controller;
 
 import com.tang.redis.practice.dto.Result;
-import com.tang.redis.practice.pojo.LoginFromVo;
+import com.tang.redis.practice.vo.LoginFromVo;
 import com.tang.redis.practice.dto.UserDto;
 import com.tang.redis.practice.service.UserService;
 import com.tang.redis.practice.util.UserHolder;

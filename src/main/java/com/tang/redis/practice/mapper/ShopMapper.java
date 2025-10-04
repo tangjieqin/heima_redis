@@ -1,7 +1,7 @@
 package com.tang.redis.practice.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
-import com.tang.redis.practice.pojo.entity.Shop;
+import com.tang.redis.practice.entity.Shop;
 
 /**
  * @program: redis_heima

@@ -1,0 +1,20 @@
+# Maven
+target/
+!.mvn/wrapper/maven-wrapper.jar
+!**/src/main/**/target/
+!**/src/test/**/target/
+
+# 编译文件
+*.class
+*.log
+
+# IDE
+.idea/
+*.iml
+*.iws
+out/
+build/
+
+# OS
+.DS_Store
+Thumbs.db

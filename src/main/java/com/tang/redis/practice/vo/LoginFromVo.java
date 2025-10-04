@@ -1,4 +1,4 @@
-package com.tang.redis.practice.pojo;
+package com.tang.redis.practice.vo;
 
 import lombok.Data;
 

@@ -1,7 +1,6 @@
 package com.tang.redis.practice.util;
 
 import com.tang.redis.practice.dto.UserDto;
-import com.tang.redis.practice.pojo.entity.User;
 
 /**
  * @program: redis_heima

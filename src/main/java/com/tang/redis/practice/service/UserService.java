@@ -2,8 +2,8 @@ package com.tang.redis.practice.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.tang.redis.practice.dto.Result;
-import com.tang.redis.practice.pojo.LoginFromVo;
-import com.tang.redis.practice.pojo.entity.User;
+import com.tang.redis.practice.vo.LoginFromVo;
+import com.tang.redis.practice.entity.User;
 import jakarta.servlet.http.HttpSession;
 
 import javax.mail.MessagingException;
