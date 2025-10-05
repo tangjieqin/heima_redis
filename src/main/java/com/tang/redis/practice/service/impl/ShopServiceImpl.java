@@ -11,7 +11,9 @@ import com.tang.redis.practice.entity.RedisData;
 import com.tang.redis.practice.mapper.ShopMapper;
 import com.tang.redis.practice.entity.Shop;
 import com.tang.redis.practice.service.ShopService;
+import com.tang.redis.practice.util.CacheClient;
 import com.tang.redis.practice.util.RedisConstants;
+import jakarta.annotation.Resource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
@@ -20,6 +22,8 @@ import java.time.LocalDateTime;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+
+import static com.tang.redis.practice.util.RedisConstants.CACHE_SHOP_TTL;
 
 /**
  * @program: redis_heima
@@ -32,6 +36,9 @@ public class ShopServiceImpl extends ServiceImpl<ShopMapper, Shop> implements Sh
 
     @Autowired
     private StringRedisTemplate stringRedisTemplate;
+
+    @Resource
+    private CacheClient cacheClient;
 
     @Override
     public Result queryById(Long id) {
@@ -55,11 +62,16 @@ public class ShopServiceImpl extends ServiceImpl<ShopMapper, Shop> implements Sh
 
         // 缓存穿透
 //        Shop shop = queryWithPassThrough(id);
+//        cacheClient.queryWithPassThrough(RedisConstants.CACHE_SHOP_KEY, id, CACHE_SHOP_TTL,
+//                TimeUnit.MINUTES, Shop.class, this::getById);
 
         // 缓存穿透：互斥锁
 //        Shop shop = queryWithMutex(id);
 
-        Shop shop = queryWithLogicalExpire(id);
+//        Shop shop = queryWithLogicalExpire(id);
+
+        Shop shop = cacheClient.queryWithLogicalExpire(RedisConstants.CACHE_SHOP_KEY, id, CACHE_SHOP_TTL, TimeUnit.SECONDS, Shop.class, this::getById);
+
         if (shop == null) {
             return Result.fail("店铺不存在");
         }
@@ -145,11 +157,11 @@ public class ShopServiceImpl extends ServiceImpl<ShopMapper, Shop> implements Sh
             Thread.sleep(200);
             if (shop == null) {
                 // 数据库不存在，redis中存null
-                stringRedisTemplate.opsForValue().set(key, "", RedisConstants.CACHE_SHOP_TTL, TimeUnit.MINUTES);
+                stringRedisTemplate.opsForValue().set(key, "", CACHE_SHOP_TTL, TimeUnit.MINUTES);
                 return null;
             }
             // 存在，写入redis
-            stringRedisTemplate.opsForValue().set(key, JSONUtil.toJsonStr(shop), RedisConstants.CACHE_SHOP_TTL, TimeUnit.MINUTES);
+            stringRedisTemplate.opsForValue().set(key, JSONUtil.toJsonStr(shop), CACHE_SHOP_TTL, TimeUnit.MINUTES);
             return shop;
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
@@ -198,7 +210,7 @@ public class ShopServiceImpl extends ServiceImpl<ShopMapper, Shop> implements Sh
         }
         // 存Redis
         String jsonStr = JSONUtil.toJsonStr(shop);
-        stringRedisTemplate.opsForValue().set(key, jsonStr, RedisConstants.CACHE_SHOP_TTL, TimeUnit.MINUTES);  // 时间是30分钟有效
+        stringRedisTemplate.opsForValue().set(key, jsonStr, CACHE_SHOP_TTL, TimeUnit.MINUTES);  // 时间是30分钟有效
         return shop;
     }
 
